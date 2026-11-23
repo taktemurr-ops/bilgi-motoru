@@ -93,6 +93,8 @@ const Map<String, List<String>> kBilgiTexts = {
 /// Kısa metin; {ad} yer tutucuları [p] ile dolar.
 String bt(String lang, String key, [Map<String, Object> p = const {}]) {
   var s = Strings.pick(kBilgiTexts[key]!, lang);
-  p.forEach((k, v) => s = s.replaceAll('{$k}', '$v'));
+  for (final e in p.entries) {
+    s = s.replaceAll('{${e.key}}', '${e.value}');
+  }
   return s;
 }
