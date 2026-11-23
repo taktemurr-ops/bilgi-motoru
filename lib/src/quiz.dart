@@ -392,7 +392,7 @@ String _kg(double kg) {
 
 // ------------------------------------------------------------------ denetim
 
-bool _distinct(List<int> xs) => xs.toSet().length == xs.length;
+bool _distinct(List<Object> xs) => xs.toSet().length == xs.length;
 
 /// Soru verilerle tutarlı ve tek doğru yanıtlı mı?
 bool checkQ(BQ q) {
