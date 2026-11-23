@@ -3,7 +3,9 @@ import 'package:bilgi_motoru/src/data/countries.dart';
 import 'package:bilgi_motoru/src/data/elements.dart';
 import 'package:bilgi_motoru/src/data/events.dart';
 import 'package:bilgi_motoru/src/data/provinces.dart';
+import 'package:bilgi_motoru/src/data/extra.dart';
 import 'package:bilgi_motoru/src/quiz.dart';
+import 'package:bilgi_motoru/src/quiz_ext.dart';
 import 'package:studio_core/core/rng.dart';
 
 void main() {
@@ -56,6 +58,49 @@ void main() {
         ..sort((a, b) => kEvents[q.o[a]].year.compareTo(kEvents[q.o[b]].year));
       expect(orderCorrect(q, idx), isTrue);
       expect(orderCorrect(q, idx.reversed.toList()), isFalse);
+    }
+  });
+
+  test('ek veri tabloları tutarlı', () {
+    expect(kDishes.length, greaterThanOrEqualTo(120));
+    for (final x in kDishes) {
+      expect(x.country >= 0 && x.country < kCountries.length, isTrue, reason: x.en);
+    }
+    expect(kFacts.length, greaterThanOrEqualTo(100));
+    expect(kFacts.where((f) => f.truth).length, greaterThan(40));
+    expect(kFacts.where((f) => !f.truth).length, greaterThan(40));
+    for (var i = 1; i < kMountains.length; i++) {
+      expect(kMountains[i - 1].m, greaterThan(kMountains[i].m));
+    }
+    expect(kPlanetDist.length, 8);
+  });
+
+  test('tahminde doğru değere yakın yanıt kabul edilir, uzak yanıt edilmez', () {
+    for (var s = 0; s < 200; s++) {
+      final q = genEst(1 + s % 10, SeededRandom(s));
+      if (q == null) continue;
+      expect(checkQ(q), isTrue);
+      final spec = estSpec(q);
+      final g = spec.round(spec.at(spec.posOf(spec.value)));
+      expect(spec.error(g) <= spec.tol, isTrue, reason: 'tahmin ${q.a}');
+      expect(spec.error(spec.round(spec.at(0))) <= spec.tol && spec.error(spec.round(spec.at(1))) <= spec.tol, isFalse);
+    }
+  });
+
+  test('sıralama ölçütleri ve doğru/uydurma tutarlı', () {
+    for (var s = 0; s < 100; s++) {
+      final q = genSortP(1 + s % 10, SeededRandom(s));
+      if (q != null) {
+        expect(checkQ(q), isTrue);
+        final idx = [for (var i = 0; i < q.o.length; i++) i]..sort((a, b) => orderKey(q, a).compareTo(orderKey(q, b)));
+        expect(orderCorrect(q, idx), isTrue);
+        expect(orderCorrect(q, idx.reversed.toList()), isFalse);
+      }
+      final t = genTf(1 + s % 10, SeededRandom(s + 500));
+      if (t != null) {
+        expect(checkQ(t), isTrue);
+        expect(t.ans, tfTruth(t.a) ? 0 : 1);
+      }
     }
   });
 }

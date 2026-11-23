@@ -9,6 +9,7 @@ import 'data/elements.dart';
 import 'data/events.dart';
 import 'data/provinces.dart';
 import 'model.dart';
+import 'quiz_ext.dart';
 import 'texts.dart';
 
 /// Soru şablonları. Bir soru dil bağımsız tutulur (kimlikler ve sayılar);
@@ -20,7 +21,8 @@ class Tpl {
   static const planetN = 19, planetBig = 20, rocky = 21, unit = 22;
   static const cls = 23, notCls = 24, eggs = 25, sea = 26, biggest = 27, legs = 28, herb = 29, carn = 30;
   static const year = 31, first = 32, later = 33, order = 34, span = 35, bigger = 36;
-  static const count = 37;
+  static const est = 37, sortP = 38, tf = 39, dish = 40, dishRev = 41;
+  static const count = 42;
 }
 
 /// Bir soru: şablon, argümanlar, seçenekler ve doğru seçeneğin sırası.
@@ -35,12 +37,13 @@ class BQ {
   QMode get mode => switch (t) {
         Tpl.tapCountry => QMode.mapWorld,
         Tpl.tapProv => QMode.mapTurkey,
-        Tpl.order => QMode.order,
+        Tpl.order || Tpl.sortP => QMode.order,
+        Tpl.est => QMode.estimate,
         _ => QMode.choice,
       };
 
   /// Seçenekler uzun yazı mı (alt alta dizilir)?
-  bool get longOptions => t == Tpl.first || t == Tpl.later || t == Tpl.order;
+  bool get longOptions => t == Tpl.first || t == Tpl.later || t == Tpl.order || t == Tpl.dishRev;
 
   /// Seçenekler emoji mi?
   bool get emojiOptions => t >= Tpl.cls && t <= Tpl.carn && t != Tpl.legs || t == Tpl.bigger;
@@ -49,10 +52,10 @@ class BQ {
   bool get elementOptions => t == Tpl.z2s || t == Tpl.cat || t == Tpl.liquid || t == Tpl.gas || t == Tpl.mass;
 }
 
-enum QMode { choice, mapWorld, mapTurkey, order }
+enum QMode { choice, mapWorld, mapTurkey, order, estimate }
 
 /// Ekranda soru üstünde gösterilen görsel.
-enum QVisual { none, worldPin, turkeyPin, plate, element, number, emoji, event, unit, province }
+enum QVisual { none, worldPin, turkeyPin, plate, element, number, emoji, event, unit, province, dish }
 
 // ------------------------------------------------------------------ sabit veri
 
@@ -188,6 +191,7 @@ class QText {
 
 /// Ekrandaki soru ve seçenek metinleri.
 QText renderQ(BQ q, String lang) {
+  if (q.t >= Tpl.est) return renderExt(q, lang);
   switch (q.t) {
     case Tpl.cap: {
       final c = q.a[0];
@@ -288,11 +292,13 @@ QVisual visualOf(BQ q) => switch (q.t) {
       Tpl.year || Tpl.span => QVisual.event,
       Tpl.unit => QVisual.unit,
       Tpl.plateRev || Tpl.region => QVisual.province,
+      Tpl.dish => QVisual.dish,
       _ => QVisual.none,
     };
 
 /// Yanıttan sonra gösterilen kısa açıklama.
 String explain(BQ q, String lang) {
+  if (q.t >= Tpl.est) return explainExt(q, lang);
   String prov(int i) {
     final p = kProvinces[i];
     return '${_plate(i)} · ${p.name} · ${regionName(p.region, lang)}';
@@ -397,6 +403,7 @@ bool _distinct(List<Object> xs) => xs.toSet().length == xs.length;
 /// Soru verilerle tutarlı ve tek doğru yanıtlı mı?
 bool checkQ(BQ q) {
   final o = q.o;
+  if (q.t < 0 || q.t >= Tpl.count) return false;
   if (q.mode == QMode.choice) {
     if (o.length < 2 || q.ans < 0 || q.ans >= o.length || !_distinct(o)) return false;
   }
@@ -407,6 +414,7 @@ bool checkQ(BQ q) {
     return true;
   }
 
+  if (q.t >= Tpl.est) return checkExt(q);
   switch (q.t) {
     case Tpl.cap: {
       final c = q.a[0];
@@ -507,9 +515,9 @@ bool checkQ(BQ q) {
 
 /// Sıralama sorusu: verilen dokunuş sırası doğru mu?
 bool orderCorrect(BQ q, List<int> picks) {
-  if (picks.length != q.o.length) return false;
+  if (picks.length != q.o.length || picks.toSet().length != picks.length) return false;
   for (var k = 1; k < picks.length; k++) {
-    if (kEvents[q.o[picks[k - 1]]].year >= kEvents[q.o[picks[k]]].year) return false;
+    if (orderKey(q, picks[k - 1]) >= orderKey(q, picks[k])) return false;
   }
   return true;
 }
@@ -881,11 +889,13 @@ final List<QGen> kGens = [
   genZ2S, genS2Z, genCat, genLiquid, genGas, genPeriod, genMass, //
   genPlanetN, genPlanetBig, genRocky, genUnit, //
   genCls, genNotCls, genEggs, genSea, genBiggest, genLegs, genHerb, genCarn, //
-  genYear, genFirst, genLater, genOrder, genSpan, genBigger,
+  genYear, genFirst, genLater, genOrder, genSpan, genBigger, //
+  genEst, genSortP, genTf, genDish, genDishRev,
 ];
 
 /// Aynı bölümde aynı konunun tekrar sorulmaması için anahtar.
 String subjectKey(BQ q) {
+  if (q.t >= Tpl.est) return subjectKeyExt(q);
   if (q.a.isNotEmpty) return '${q.t ~/ 5}:${q.a[0]}';
   final xs = [...q.o]..sort();
   return '${q.t}:${xs.join(',')}';

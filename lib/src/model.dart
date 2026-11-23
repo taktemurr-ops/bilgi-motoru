@@ -84,3 +84,38 @@ class HEvent {
   final String en;
   const HEvent(this.year, this.kind, this.tr, this.en);
 }
+
+class Dish {
+  final String emoji;
+  final String tr;
+  final String en;
+
+  /// kCountries içindeki sıra.
+  final int country;
+  const Dish(this.emoji, this.tr, this.en, this.country);
+}
+
+class Fact {
+  final bool truth;
+  final String tr;
+  final String en;
+  final String exTr;
+  final String exEn;
+  const Fact(this.truth, this.tr, this.en, this.exTr, this.exEn);
+}
+
+class NumFact {
+  final String tr;
+  final String en;
+  final double value;
+  final String unit;
+  final int decimals;
+  const NumFact(this.tr, this.en, this.value, this.unit, this.decimals);
+}
+
+class Mountain {
+  final String tr;
+  final String en;
+  final int m;
+  const Mountain(this.tr, this.en, this.m);
+}

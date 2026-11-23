@@ -29,6 +29,10 @@ final Map<String, BilgiKind> kBilgiKinds = {
   'hangisi': const BilgiKind('hangisi', [
     (Tpl.area, 3), (Tpl.north, 2), (Tpl.east, 2), (Tpl.mass, 2), (Tpl.planetBig, 1), (Tpl.first, 3), (Tpl.later, 2), (Tpl.bigger, 3),
   ], base: 10, per: 2, timeScale: 0.7),
+  'tahmin': const BilgiKind('tahmin', [(Tpl.est, 1)], base: 5, per: 2),
+  'sirala': const BilgiKind('sirala', [(Tpl.sortP, 3), (Tpl.order, 1)], base: 5, per: 2),
+  'dogru': const BilgiKind('dogru', [(Tpl.tf, 1)], base: 8, per: 2, timeScale: 0.8),
+  'mutfak': const BilgiKind('mutfak', [(Tpl.dish, 3), (Tpl.dishRev, 2)]),
   'duello': const BilgiKind('duello', [
     (Tpl.cap, 2), (Tpl.cont, 1), (Tpl.area, 1), (Tpl.z2s, 1), (Tpl.s2z, 1), (Tpl.gas, 1), //
     (Tpl.planetN, 1), (Tpl.planetBig, 1), (Tpl.rocky, 1), (Tpl.unit, 2), //

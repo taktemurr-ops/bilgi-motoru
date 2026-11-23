@@ -14,6 +14,8 @@ import 'data/animals.dart';
 import 'data/provinces.dart';
 import 'maps.dart';
 import 'quiz.dart';
+import 'quiz_ext.dart';
+import 'data/extra.dart';
 import 'texts.dart';
 
 /// Yanıt sonrası durum.
@@ -21,9 +23,12 @@ class _Outcome {
   final bool right;
   final bool timeUp;
 
+  /// Tahminde tam isabet.
+  final bool perfect;
+
   /// Haritada dokunulan nokta ve uzaklık.
   final double? lat, lon, km;
-  const _Outcome(this.right, {this.timeUp = false, this.lat, this.lon, this.km});
+  const _Outcome(this.right, {this.timeUp = false, this.perfect = false, this.lat, this.lon, this.km});
 }
 
 /// Tek kişilik bilgi yarışması ekranı: süre, can, seri, joker ve açıklama.
@@ -43,6 +48,8 @@ class _QuizViewState extends State<QuizView> {
   double left = 0, total = 1;
   Set<int> hidden = {};
   int? chosen;
+  double estT = 0.5;
+  double? estGuess;
   final List<int> picks = [];
   _Outcome? outcome;
   Timer? _tick;
@@ -72,6 +79,7 @@ class _QuizViewState extends State<QuizView> {
       QMode.mapWorld || QMode.mapTurkey => 8.0,
       QMode.order => 6.0 + q.o.length * 3,
       QMode.choice => q.longOptions ? 6.0 : 0.0,
+      QMode.estimate => 6.0,
     };
     return math.max<double>(8.0, (base + extra) * widget.timeScale);
   }
@@ -79,6 +87,8 @@ class _QuizViewState extends State<QuizView> {
   void _startQuestion() {
     hidden = {};
     chosen = null;
+    estT = 0.5;
+    estGuess = null;
     picks.clear();
     outcome = null;
     total = _limitFor(q);
@@ -161,6 +171,17 @@ class _QuizViewState extends State<QuizView> {
         ctx.sfx(Sfx.tap);
         if (picks.length == q.o.length) _resolve(_Outcome(orderCorrect(q, picks)));
       }
+    });
+  }
+
+  void _confirmEstimate() {
+    if (outcome != null || q.mode != QMode.estimate) return;
+    setState(() {
+      final spec = estSpec(q);
+      final g = spec.round(spec.at(estT));
+      estGuess = g;
+      final err = spec.error(g);
+      _resolve(_Outcome(err <= spec.tol, perfect: err <= spec.tol / 3));
     });
   }
 
@@ -306,6 +327,8 @@ class _QuizViewState extends State<QuizView> {
         return Padding(padding: const EdgeInsets.all(10), child: _mapAnswer());
       case QMode.order:
         return _orderList(context, text);
+      case QMode.estimate:
+        return _estimate(context);
       case QMode.choice:
         final vis = visualOf(q);
         return Column(children: [
@@ -346,11 +369,11 @@ class _QuizViewState extends State<QuizView> {
   Widget _orderList(BuildContext context, QText text) {
     final scheme = Theme.of(context).colorScheme;
     final o = outcome;
-    final sorted = [for (var i = 0; i < q.o.length; i++) i]..sort((a, b) => kEvents[q.o[a]].year.compareTo(kEvents[q.o[b]].year));
+    final sorted = [for (var i = 0; i < q.o.length; i++) i]..sort((a, b) => orderKey(q, a).compareTo(orderKey(q, b)));
     return ListView(padding: const EdgeInsets.fromLTRB(14, 6, 14, 6), children: [
       Padding(
         padding: const EdgeInsets.only(bottom: 6),
-        child: Text(bt(lang, 'tapOrder'), textAlign: TextAlign.center, style: TextStyle(color: scheme.onSurfaceVariant)),
+        child: Text(bt(lang, q.t == Tpl.order ? 'tapOrder' : 'tapInOrder'), textAlign: TextAlign.center, style: TextStyle(color: scheme.onSurfaceVariant)),
       ),
       for (var i = 0; i < q.o.length; i++)
         Padding(
@@ -368,11 +391,63 @@ class _QuizViewState extends State<QuizView> {
               ),
               const SizedBox(width: 10),
               Expanded(child: Text(text.options[i])),
-              if (o != null) Text(' ${kEvents[q.o[i]].year}', style: const TextStyle(fontWeight: FontWeight.w700)),
+              if (o != null) Text(' ${orderValue(q, i)}', style: const TextStyle(fontWeight: FontWeight.w700)),
             ]),
           ),
         ),
     ]);
+  }
+
+  Widget _estimate(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final spec = estSpec(q);
+    final o = outcome;
+    final g = spec.round(spec.at(estT));
+    final unit = spec.unit.isEmpty ? '' : ' ${spec.unit}';
+    final truthPos = _clamp01(spec.posOf(spec.value));
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          FittedBox(
+            child: Text('${spec.format(g)}$unit',
+                style: TextStyle(fontSize: 40, fontWeight: FontWeight.w800, color: scheme.primary)),
+          ),
+          const SizedBox(height: 6),
+          Slider(
+            value: estT,
+            onChanged: o == null ? (v) => setState(() => estT = v) : null,
+          ),
+          if (o != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 22),
+              child: LayoutBuilder(builder: (context, box) {
+                return SizedBox(
+                  height: 18,
+                  child: Stack(children: [
+                    Positioned(
+                      left: clampD(truthPos * box.maxWidth - 9, 0, math.max<double>(0, box.maxWidth - 18)),
+                      child: const Icon(Icons.arrow_drop_up, size: 18, color: Color(0xFF4F9A6E)),
+                    ),
+                  ]),
+                );
+              }),
+            ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 22),
+            child: Row(children: [
+              Text(spec.format(spec.round(spec.lo)), style: TextStyle(color: scheme.onSurfaceVariant)),
+              const Spacer(),
+              Text(spec.format(spec.round(spec.hi)), style: TextStyle(color: scheme.onSurfaceVariant)),
+            ]),
+          ),
+          const SizedBox(height: 14),
+          FilledButton(onPressed: o == null ? _confirmEstimate : null, child: Text(bt(lang, 'confirm'))),
+          const SizedBox(height: 6),
+          Text(bt(lang, 'estHint'), textAlign: TextAlign.center, style: TextStyle(color: scheme.onSurfaceVariant)),
+        ]),
+      ),
+    );
   }
 
   Widget _options(BuildContext context, QText text) {
@@ -465,7 +540,7 @@ class _QuizViewState extends State<QuizView> {
     final good = o.right;
     final km = o.km;
     final head = good
-        ? (km != null && km < 60 ? bt(lang, 'perfectHit') : bt(lang, 'correct'))
+        ? ((km != null && km < 60) || o.perfect ? bt(lang, 'perfectHit') : bt(lang, 'correct'))
         : (o.timeUp ? bt(lang, 'timeUp') : bt(lang, 'wrong'));
     return SafeArea(
       top: false,
@@ -485,6 +560,8 @@ class _QuizViewState extends State<QuizView> {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
               Text(head, style: const TextStyle(fontWeight: FontWeight.w800)),
               if (km != null) Text(bt(lang, 'away', {'d': km.round()}), style: TextStyle(color: scheme.onSurfaceVariant)),
+              if (estGuess != null)
+                Text(bt(lang, 'yourGuess', {'g': estSpec(q).format(estGuess!)}), style: TextStyle(color: scheme.onSurfaceVariant)),
               Text(explain(q, lang), maxLines: 6, overflow: TextOverflow.ellipsis),
             ]),
           ),
@@ -606,6 +683,13 @@ class QuestionVisual extends StatelessWidget {
         return card(FittedBox(child: Text('${u.$1} = ? ${u.$2}', style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w800))));
       case QVisual.province:
         return card(Text(kProvinces[q.a[0]].name, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800)));
+      case QVisual.dish:
+        final x = kDishes[q.a[0]];
+        return card(Column(mainAxisSize: MainAxisSize.min, children: [
+          FittedBox(child: Text(x.emoji, style: const TextStyle(fontSize: 64))),
+          const SizedBox(height: 6),
+          Text(dishName(q.a[0], lang), textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+        ]));
       case QVisual.none:
         return const SizedBox.shrink();
     }
@@ -648,3 +732,5 @@ class PlateView extends StatelessWidget {
     );
   }
 }
+
+double _clamp01(double v) => v.isNaN ? 0.5 : (v < 0 ? 0 : (v > 1 ? 1 : v));
