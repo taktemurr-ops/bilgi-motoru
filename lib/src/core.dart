@@ -84,6 +84,10 @@ class BilgiRules extends GameRules<BLevel> {
   @override
   int get levelCount => levels;
 
+  /// Düello türünde 2: merkez "Bilgisayara karşı" ve "Çevrimiçi masa" sunar.
+  @override
+  int get localPlayers => kind.duel ? 2 : 0;
+
   @override
   List<String> get optionalMechanics => const [];
 
