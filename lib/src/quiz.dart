@@ -10,6 +10,7 @@ import 'data/events.dart';
 import 'data/provinces.dart';
 import 'model.dart';
 import 'quiz_ext.dart';
+import 'sport.dart';
 import 'texts.dart';
 
 /// Soru şablonları. Bir soru dil bağımsız tutulur (kimlikler ve sayılar);
@@ -22,7 +23,8 @@ class Tpl {
   static const cls = 23, notCls = 24, eggs = 25, sea = 26, biggest = 27, legs = 28, herb = 29, carn = 30;
   static const year = 31, first = 32, later = 33, order = 34, span = 35, bigger = 36;
   static const est = 37, sortP = 38, tf = 39, dish = 40, dishRev = 41;
-  static const count = 42;
+  static const spOly = 42, spOlyYear = 43, spCup = 44, spRule = 45, spSport = 46, spSeason = 47;
+  static const count = 48;
 }
 
 /// Bir soru: şablon, argümanlar, seçenekler ve doğru seçeneğin sırası.
@@ -46,7 +48,8 @@ class BQ {
   bool get longOptions => t == Tpl.first || t == Tpl.later || t == Tpl.order || t == Tpl.dishRev;
 
   /// Seçenekler emoji mi?
-  bool get emojiOptions => t >= Tpl.cls && t <= Tpl.carn && t != Tpl.legs || t == Tpl.bigger;
+  bool get emojiOptions =>
+      t >= Tpl.cls && t <= Tpl.carn && t != Tpl.legs || t == Tpl.bigger || (t == Tpl.spSport && a.isNotEmpty && a[0] == 1);
 
   /// Seçenekler element kutucuğu mu?
   bool get elementOptions => t == Tpl.z2s || t == Tpl.cat || t == Tpl.liquid || t == Tpl.gas || t == Tpl.mass;
@@ -890,7 +893,8 @@ final List<QGen> kGens = [
   genPlanetN, genPlanetBig, genRocky, genUnit, //
   genCls, genNotCls, genEggs, genSea, genBiggest, genLegs, genHerb, genCarn, //
   genYear, genFirst, genLater, genOrder, genSpan, genBigger, //
-  genEst, genSortP, genTf, genDish, genDishRev,
+  genEst, genSortP, genTf, genDish, genDishRev, //
+  genSpOly, genSpOlyYear, genSpCup, genSpRule, genSpSport, genSpSeason,
 ];
 
 /// Aynı bölümde aynı konunun tekrar sorulmaması için anahtar.
