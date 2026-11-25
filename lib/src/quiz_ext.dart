@@ -11,6 +11,7 @@ import 'data/extra.dart';
 import 'data/i18n.dart';
 import 'data/provinces.dart';
 import 'quiz.dart';
+import 'spaceart.dart';
 import 'sport.dart';
 import 'texts.dart';
 
@@ -573,6 +574,7 @@ bool checkExt(BQ q) => switch (q.t) {
       Tpl.sortP => _checkSort(q),
       Tpl.tf => _checkTf(q),
       Tpl.dish || Tpl.dishRev => _checkDish(q),
+      _ when q.t >= Tpl.spcFact => checkSpaceArt(q),
       _ => q.t >= Tpl.spOly && checkSport(q),
     };
 
@@ -582,10 +584,12 @@ QText renderExt(BQ q, String lang) => switch (q.t) {
       Tpl.tf => QText(tfStatement(q.a, lang), [bt(lang, 'tfTrue'), bt(lang, 'tfFake')]),
       Tpl.dish => QText(bt(lang, 'qDish'), [for (final c in q.o) countryName(c, lang)]),
       Tpl.dishRev => QText(bt(lang, 'qDishRev', {'c': countryName(q.a[0], lang)}), [for (final i in q.o) dishLabel(i, lang)]),
+      _ when q.t >= Tpl.spcFact => renderSpaceArt(q, lang),
       _ => q.t >= Tpl.spOly ? renderSport(q, lang) : const QText('?', []),
     };
 
 String explainExt(BQ q, String lang) {
+  if (q.t >= Tpl.spcFact) return explainSpaceArt(q, lang);
   if (q.t >= Tpl.spOly) return explainSport(q, lang);
   switch (q.t) {
     case Tpl.est:
@@ -607,6 +611,7 @@ String subjectKeyExt(BQ q) => switch (q.t) {
       Tpl.sortP => '${q.t}:${q.a[0]}:${([...q.o]..sort()).join(',')}',
       Tpl.dish => 'dish:${q.a[0]}',
       Tpl.dishRev => 'dishRev:${q.a[0]}',
+      _ when q.t >= Tpl.spcFact => subjectKeySpaceArt(q),
       _ when q.t >= Tpl.spOly => subjectKeySport(q),
       _ => '${q.t}:${q.a[0]}:${q.a[1]}',
     };

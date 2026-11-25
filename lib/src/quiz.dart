@@ -11,6 +11,7 @@ import 'data/i18n.dart';
 import 'data/provinces.dart';
 import 'model.dart';
 import 'quiz_ext.dart';
+import 'spaceart.dart';
 import 'sport.dart';
 import 'texts.dart';
 
@@ -25,7 +26,9 @@ class Tpl {
   static const year = 31, first = 32, later = 33, order = 34, span = 35, bigger = 36;
   static const est = 37, sortP = 38, tf = 39, dish = 40, dishRev = 41;
   static const spOly = 42, spOlyYear = 43, spCup = 44, spRule = 45, spSport = 46, spSeason = 47;
-  static const count = 48;
+  static const spcFact = 48, spcMoon = 49, spcNum = 50, spcYear = 51, spcConst = 52, spcType = 53;
+  static const artPaint = 54, artPaintRev = 55, artBook = 56, artBookRev = 57, artMove = 58, artFrom = 59, artOld = 60;
+  static const count = 61;
 }
 
 /// Bir soru: şablon, argümanlar, seçenekler ve doğru seçeneğin sırası.
@@ -46,7 +49,8 @@ class BQ {
       };
 
   /// Seçenekler uzun yazı mı (alt alta dizilir)?
-  bool get longOptions => t == Tpl.first || t == Tpl.later || t == Tpl.order || t == Tpl.dishRev;
+  bool get longOptions =>
+      t == Tpl.first || t == Tpl.later || t == Tpl.order || t == Tpl.dishRev || (t >= Tpl.artPaint && t != Tpl.artFrom);
 
   /// Seçenekler emoji mi?
   bool get emojiOptions =>
@@ -894,7 +898,9 @@ final List<QGen> kGens = [
   genCls, genNotCls, genEggs, genSea, genBiggest, genLegs, genHerb, genCarn, //
   genYear, genFirst, genLater, genOrder, genSpan, genBigger, //
   genEst, genSortP, genTf, genDish, genDishRev, //
-  genSpOly, genSpOlyYear, genSpCup, genSpRule, genSpSport, genSpSeason,
+  genSpOly, genSpOlyYear, genSpCup, genSpRule, genSpSport, genSpSeason, //
+  genSpcFact, genSpcMoon, genSpcNum, genSpcYear, genSpcConst, genSpcType, //
+  genArtPaint, genArtPaintRev, genArtBook, genArtBookRev, genArtMove, genArtFrom, genArtOld,
 ];
 
 /// Aynı bölümde aynı konunun tekrar sorulmaması için anahtar.

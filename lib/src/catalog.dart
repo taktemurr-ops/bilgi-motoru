@@ -36,6 +36,13 @@ final Map<String, BilgiKind> kBilgiKinds = {
   'spor': const BilgiKind('spor', [
     (Tpl.spOly, 3), (Tpl.spOlyYear, 2), (Tpl.spCup, 3), (Tpl.spRule, 3), (Tpl.spSport, 3), (Tpl.spSeason, 2),
   ]),
+  'uzay': const BilgiKind('uzay', [
+    (Tpl.spcFact, 3), (Tpl.spcMoon, 2), (Tpl.spcNum, 3), (Tpl.spcYear, 2), (Tpl.spcConst, 2), (Tpl.spcType, 2), //
+    (Tpl.planetN, 1), (Tpl.planetBig, 1), (Tpl.rocky, 1),
+  ]),
+  'sanat': const BilgiKind('sanat', [
+    (Tpl.artPaint, 3), (Tpl.artPaintRev, 2), (Tpl.artBook, 3), (Tpl.artBookRev, 2), (Tpl.artMove, 2), (Tpl.artFrom, 2), (Tpl.artOld, 2),
+  ]),
   'duello': const BilgiKind('duello', [
     (Tpl.cap, 2), (Tpl.cont, 1), (Tpl.area, 1), (Tpl.z2s, 1), (Tpl.s2z, 1), (Tpl.gas, 1), //
     (Tpl.planetN, 1), (Tpl.planetBig, 1), (Tpl.rocky, 1), (Tpl.unit, 2), //
