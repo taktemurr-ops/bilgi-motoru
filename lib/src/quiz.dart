@@ -7,6 +7,7 @@ import 'data/animals.dart';
 import 'data/countries.dart';
 import 'data/elements.dart';
 import 'data/events.dart';
+import 'data/i18n.dart';
 import 'data/provinces.dart';
 import 'model.dart';
 import 'quiz_ext.dart';
@@ -143,12 +144,11 @@ String clsName(int c, String lang) => bt(lang, 'cls$c');
 
 String catName(int c, String lang) => bt(lang, 'cat$c');
 
-String elemName(Elem e, String lang) => lang == 'tr' ? e.tr : e.en;
+String elemName(Elem e, String lang) => Strings.pick(kElemNames[e.z - 1], lang);
 
-/// Hayvanın adı yalnız Türkçe ve İngilizcede yazılır; diğer dillerde emoji yeter.
-String animalName(Animal a, String lang) => lang == 'tr' ? a.tr : (lang == 'en' ? a.en : '');
+String animalName(Animal a, String lang) => Strings.pick(kAnimalNames[kAnimals.indexOf(a)], lang);
 
-String eventText(HEvent e, String lang) => lang == 'tr' ? e.tr : e.en;
+String eventText(HEvent e, String lang) => Strings.pick(kEventTexts[kEvents.indexOf(e)], lang);
 
 /// 643801 → "643 801" (dar boşlukla gruplanır, her dilde okunur).
 String groupDigits(int v) {
@@ -310,7 +310,7 @@ String explain(BQ q, String lang) {
   String el(int i) {
     final e = kElements[i];
     final n = elemName(e, lang);
-    return lang == 'tr' || lang == 'en' ? '${e.sym} · ${e.z} · $n' : '${e.sym} · ${e.z}';
+    return '${e.sym} · ${e.z} · $n';
   }
 
   String an(int i) {

@@ -1,12 +1,14 @@
 import 'dart:math' as math;
 
 import 'package:studio_core/core/rng.dart';
+import 'package:studio_core/core/strings.dart';
 
 import 'data/animals.dart';
 import 'data/countries.dart';
 import 'data/elements.dart';
 import 'data/events.dart';
 import 'data/extra.dart';
+import 'data/i18n.dart';
 import 'data/provinces.dart';
 import 'quiz.dart';
 import 'sport.dart';
@@ -15,7 +17,6 @@ import 'texts.dart';
 // Ek şablonlar: Tahmin Ustası (est), Sırala Bakalım (sortP),
 // Doğru mu Uydurma mı (tf) ve Dünya Mutfağı (dish, dishRev).
 
-String _tren(String lang, String tr, String en) => lang == 'tr' ? tr : en;
 
 String _plateCode(int prov) => kProvinces[prov].plate.toString().padLeft(2, '0');
 
@@ -28,7 +29,7 @@ String _kgText(double kg) {
 
 String _elemLabel(int z, String lang) {
   final e = kElements[z];
-  return lang == 'tr' || lang == 'en' ? '${elemName(e, lang)} (${e.sym})' : e.sym;
+  return '${elemName(e, lang)} (${e.sym})';
 }
 
 String _animalLabel(int i, String lang) {
@@ -37,9 +38,9 @@ String _animalLabel(int i, String lang) {
   return n.isEmpty ? a.emoji : '${a.emoji} $n';
 }
 
-String _mountainName(int i, String lang) => _tren(lang, kMountains[i].tr, kMountains[i].en);
+String _mountainName(int i, String lang) => Strings.pick(kMountainNames[i], lang);
 
-String dishName(int i, String lang) => _tren(lang, kDishes[i].tr, kDishes[i].en);
+String dishName(int i, String lang) => Strings.pick(kDishNames[i], lang);
 
 String dishLabel(int i, String lang) => '${kDishes[i].emoji} ${dishName(i, lang)}';
 
@@ -167,7 +168,7 @@ String _estPrompt(BQ q, String lang) {
     EstSrc.year => bt(lang, 'qEst4', {'e': eventText(kEvents[i], lang)}),
     EstSrc.mountain => bt(lang, 'qEst5', {'m': _mountainName(i, lang)}),
     EstSrc.animal => bt(lang, 'qEst6', {'a': _animalLabel(i, lang)}),
-    _ => _tren(lang, kNumFacts[i].tr, kNumFacts[i].en),
+    _ => Strings.pick(kNumFactTexts[i], lang),
   };
 }
 
@@ -403,7 +404,7 @@ String tfStatement(List<int> a, String lang) {
     TfSrc.animal => bt(lang, 'tf4', {'a': _animalLabel(x, lang), 'cls': clsName(y, lang)}),
     TfSrc.event => bt(lang, 'tf5', {'e': eventText(kEvents[x], lang), 'y': y}),
     TfSrc.plate => bt(lang, 'tf6', {'x': kProvinces[x].name, 'n': _plateCode(y)}),
-    _ => _tren(lang, kFacts[x].tr, kFacts[x].en),
+    _ => Strings.pick(kFactTexts[x], lang),
   };
 }
 
@@ -426,7 +427,7 @@ String _tfExplain(List<int> a, String lang) {
       final p = kProvinces[x];
       return '${_plateCode(x)} · ${p.name} · ${regionName(p.region, lang)}';
     default:
-      return _tren(lang, kFacts[x].exTr, kFacts[x].exEn);
+      return Strings.pick(kFactExplain[x], lang);
   }
 }
 
