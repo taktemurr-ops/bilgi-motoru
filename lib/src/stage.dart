@@ -483,7 +483,14 @@ class _QuizViewState extends State<QuizView> {
       } else if (q.elementOptions) {
         child = ElementTile(sym: label, compact: true);
       } else {
-        child = Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600));
+        // Uzun seçenek kısa kutuda kesilmesin: satırlara bölünür, gerekirse
+        // kutuya sığacak kadar küçülür.
+        final text = Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600));
+        child = LayoutBuilder(
+          builder: (context, b) => b.maxWidth.isFinite
+              ? FittedBox(fit: BoxFit.scaleDown, child: SizedBox(width: b.maxWidth, child: text))
+              : text,
+        );
       }
       return Opacity(
         opacity: hidden.contains(i) ? 0.15 : 1,
