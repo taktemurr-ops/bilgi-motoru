@@ -9,6 +9,7 @@ import 'package:studio_core/core/stats.dart';
 import 'duel.dart';
 import 'quiz.dart';
 import 'stage.dart';
+import 'studio_chrome.dart';
 
 /// Bir bilgi yarışması türü: hangi soru şablonlarından, kaç soru sorulacağı.
 class BilgiKind {
@@ -131,8 +132,12 @@ class BilgiStage extends StatelessWidget {
   final BilgiRules rules;
   const BilgiStage({super.key, required this.ctx, required this.rules});
 
+  /// Motorun bütün arayüzü (paneller, pencereler, düğmeler) onaylı koyu
+  /// tasarımda; tahta çizimleri kendi renklerini korur.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => StudioChrome(child: Builder(builder: _build));
+
+  Widget _build(BuildContext context) {
     final lv = ctx.generated.puzzle as BLevel;
     return rules.kind.duel
         ? DuelView(ctx: ctx, level: lv)
