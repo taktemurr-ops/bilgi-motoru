@@ -1,5 +1,7 @@
 import 'package:studio_core/core/strings.dart';
 
+import 'texts_ek4.dart';
+
 /// bilgi-motoru'nun kısa metinleri (33 dil). Sıra:
 /// tr en de es fr ar fa he ur ru uk pl cs ro hu el it pt nl sv da nb fi ja ko zh hi bn id ms th vi fil
 const Map<String, List<String>> kBilgiTexts = {
@@ -175,7 +177,7 @@ const Map<String, List<String>> kBilgiTexts = {
 
 /// Kısa metin; {ad} yer tutucuları [p] ile dolar.
 String bt(String lang, String key, [Map<String, Object> p = const {}]) {
-  var s = Strings.pick(kBilgiTexts[key]!, lang);
+  var s = Strings.pick(kBilgiTexts[key] ?? kBilgiTexts4[key]!, lang);
   for (final e in p.entries) {
     s = s.replaceAll('{${e.key}}', '${e.value}');
   }

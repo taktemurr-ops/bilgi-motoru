@@ -7,6 +7,7 @@ import 'package:studio_core/core/rng.dart';
 import 'package:studio_core/core/stats.dart';
 
 import 'duel.dart';
+import 'ek4.dart';
 import 'quiz.dart';
 import 'stage.dart';
 import 'studio_chrome.dart';
@@ -27,7 +28,10 @@ class BilgiKind {
 
   /// Soru başına süre çarpanı (hızlı turlar için < 1).
   final double timeScale;
-  const BilgiKind(this.id, this.mix, {this.base = 6, this.per = 2, this.duel = false, this.timeScale = 1.0});
+
+  /// 4. tur özel türleri: 'genie', 'survey', 'ladder', 'shape' (boş: normal soru turu).
+  final String special;
+  const BilgiKind(this.id, this.mix, {this.base = 6, this.per = 2, this.duel = false, this.timeScale = 1.0, this.special = ''});
 
   int count(int d) => base + d ~/ per;
 }
@@ -44,6 +48,7 @@ double clampD(double v, double lo, double hi) => v < lo ? lo : (v > hi ? hi : v)
 
 /// Bölüm kurulumu: karışımdan soru çeker, her soruyu denetler, konu tekrarını önler.
 BLevel? makeLevel(BilgiKind k, int d, int seed) {
+  if (k.special.isNotEmpty) return makeSpecial(k, d, seed);
   final r = SeededRandom(mixSeed([seed, d, 4401]));
   final n = k.count(d);
   final weights = [for (final m in k.mix) m.$2];
@@ -121,6 +126,7 @@ class BilgiRules extends GameRules<BLevel> {
 
   @override
   Validation validate(BLevel puzzle, LevelSpec spec) {
+    if (kind.special.isNotEmpty) return checkSpecial(kind, puzzle) ? const Validation.ok() : const Validation.fail('invalid');
     final ok = puzzle.kind == kind.id && puzzle.qs.length == kind.count(puzzle.d) && puzzle.qs.every(checkQ);
     return ok ? const Validation.ok() : const Validation.fail('invalid');
   }
@@ -139,6 +145,7 @@ class BilgiStage extends StatelessWidget {
 
   Widget _build(BuildContext context) {
     final lv = ctx.generated.puzzle as BLevel;
+    if (rules.kind.special.isNotEmpty) return buildSpecial(ctx, lv, rules.kind);
     return rules.kind.duel
         ? DuelView(ctx: ctx, level: lv)
         : QuizView(ctx: ctx, level: lv, timeScale: rules.kind.timeScale);

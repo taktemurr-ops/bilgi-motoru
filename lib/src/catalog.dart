@@ -43,6 +43,10 @@ final Map<String, BilgiKind> kBilgiKinds = {
   'sanat': const BilgiKind('sanat', [
     (Tpl.artPaint, 3), (Tpl.artPaintRev, 2), (Tpl.artBook, 3), (Tpl.artBookRev, 2), (Tpl.artMove, 2), (Tpl.artFrom, 2), (Tpl.artOld, 2),
   ]),
+  'aklimdan': const BilgiKind('aklimdan', [], special: 'genie'),
+  'halk': const BilgiKind('halk', [], special: 'survey'),
+  'merdiven': const BilgiKind('merdiven', [], special: 'ladder'),
+  'siluet': const BilgiKind('siluet', [], special: 'shape'),
   'duello': const BilgiKind('duello', [
     (Tpl.cap, 2), (Tpl.cont, 1), (Tpl.area, 1), (Tpl.z2s, 1), (Tpl.s2z, 1), (Tpl.gas, 1), //
     (Tpl.planetN, 1), (Tpl.planetBig, 1), (Tpl.rocky, 1), (Tpl.unit, 2), //
