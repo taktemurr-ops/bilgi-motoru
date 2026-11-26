@@ -8,6 +8,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:studio_core/app/game_api.dart';
 import 'package:studio_core/app/services/audio.dart';
+import 'package:studio_core/core/game_rules.dart';
 import 'package:studio_core/core/rng.dart';
 import 'package:studio_core/core/strings.dart';
 
