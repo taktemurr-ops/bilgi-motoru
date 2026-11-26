@@ -80,10 +80,13 @@ void _finish(PlayContext ctx, {required bool won, int score = 0, int stars = 1, 
   ));
 }
 
+/// Zemin açıksa koyu, değilse beyaz yazı (en az 3:1 karşıtlık).
+Color _onColor(Color bg) => 1.05 / (bg.computeLuminance() + 0.05) >= 3.2 ? Colors.white : const Color(0xFF14121F);
+
 Widget _bigBtn(BuildContext context, String label, Color color, VoidCallback? onTap, {IconData? icon}) => SizedBox(
       height: 56,
       child: FilledButton.icon(
-        style: FilledButton.styleFrom(backgroundColor: color, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+        style: FilledButton.styleFrom(backgroundColor: color, foregroundColor: _onColor(color), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
         onPressed: onTap,
         icon: Icon(icon ?? Icons.check_rounded),
         label: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
@@ -461,10 +464,16 @@ class _GenieViewState extends State<GenieView> {
     final top = Padding(
       padding: const EdgeInsets.fromLTRB(14, 8, 14, 0),
       child: Row(children: [
-        StudioPill(label: catName, selected: true),
-        const Spacer(),
+        Flexible(child: StudioPill(label: catName, selected: true)),
+        const SizedBox(width: 8),
         if (phase == 1 || phase == 2)
-          Text('${bt(lang, 'gnQuestion')} ${g.used + 1}/$budget', style: const TextStyle(color: kStudioSubtle, fontWeight: FontWeight.w800)),
+          Flexible(
+            child: Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: Text('${bt(lang, 'gnQuestion')} ${g.used + 1}/$budget',
+                  maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: kStudioSubtle, fontWeight: FontWeight.w800)),
+            ),
+          ),
       ]),
     );
     Widget body;
