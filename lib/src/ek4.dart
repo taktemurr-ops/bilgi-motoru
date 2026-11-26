@@ -464,7 +464,16 @@ class _GenieViewState extends State<GenieView> {
     final top = Padding(
       padding: const EdgeInsets.fromLTRB(14, 8, 14, 0),
       child: Row(children: [
-        Flexible(child: StudioPill(label: catName, selected: true)),
+        Flexible(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(color: StudioLook.of(context).accent, borderRadius: BorderRadius.circular(22)),
+            child: Text(catName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: StudioLook.of(context).onAccent, fontSize: 14, fontWeight: FontWeight.w700)),
+          ),
+        ),
         const SizedBox(width: 8),
         if (phase == 1 || phase == 2)
           Flexible(
