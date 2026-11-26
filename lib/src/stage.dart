@@ -673,16 +673,21 @@ class QuestionVisual extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    // Kısa ekranda ve büyük yazıda kart, görsel alanına sığacak kadar küçülür.
     Widget card(Widget child) => Center(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-            decoration: BoxDecoration(
-              color: scheme.surface,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: scheme.outlineVariant),
-            ),
-            child: child,
-          ),
+          child: LayoutBuilder(builder: (context, b) {
+            final box = Container(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+              decoration: BoxDecoration(
+                color: scheme.surface,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: scheme.outlineVariant),
+              ),
+              child: child,
+            );
+            if (!b.maxWidth.isFinite || !b.maxHeight.isFinite) return box;
+            return FittedBox(fit: BoxFit.scaleDown, child: ConstrainedBox(constraints: BoxConstraints(maxWidth: b.maxWidth), child: box));
+          }),
         );
     switch (visualOf(q)) {
       case QVisual.worldPin:
