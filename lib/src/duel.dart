@@ -8,6 +8,7 @@ import 'package:studio_core/core/rng.dart';
 
 import 'core.dart';
 import 'quiz.dart';
+import 'studio_chrome.dart';
 import 'stage.dart';
 import 'texts.dart';
 
@@ -527,8 +528,8 @@ class _DuelViewState extends State<DuelView> {
                       label: text.options[i],
                       emoji: q.emojiOptions,
                       color: winner != null && i == q.ans
-                          ? const Color(0xFF4F9A6E)
-                          : (mine == i ? const Color(0xFFC8553D) : scheme.surface),
+                          ? StudioLook.good
+                          : (mine == i ? StudioLook.bad : scheme.surface),
                       dim: mine != null && mine != i && winner == null,
                       onTap: () => single ? _myAnswer(i) : _tap(player, i),
                     ),
@@ -553,11 +554,16 @@ class _DuelOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final look = StudioLook.of(context);
+    final neutral = color == scheme.surface;
     return Opacity(
       opacity: dim ? 0.5 : 1,
       child: Material(
-        color: color == scheme.surface ? color : color.withValues(alpha: 0.35),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14), side: BorderSide(color: scheme.outlineVariant)),
+        color: neutral ? Colors.white.withValues(alpha: 0.07) : color.withValues(alpha: 0.30),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: neutral ? look.accent.withValues(alpha: 0.45) : color, width: neutral ? 1.2 : 2.2),
+        ),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
           onTap: onTap,

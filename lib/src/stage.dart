@@ -17,6 +17,7 @@ import 'quiz.dart';
 import 'quiz_ext.dart';
 import 'data/extra.dart';
 import 'texts.dart';
+import 'studio_chrome.dart';
 
 /// Yanıt sonrası durum.
 class _Outcome {
@@ -280,8 +281,8 @@ class _QuizViewState extends State<QuizView> {
           child: LinearProgressIndicator(
             value: total <= 0 ? 0 : clampD(left / total, 0, 1),
             minHeight: 6,
-            color: left / total < 0.25 ? const Color(0xFFC8553D) : scheme.primary,
-            backgroundColor: scheme.surfaceContainerHighest,
+            color: left / total < 0.25 ? StudioLook.bad : scheme.primary,
+            backgroundColor: Colors.white.withValues(alpha: 0.15),
           ),
         ),
       ),
@@ -297,25 +298,39 @@ class _QuizViewState extends State<QuizView> {
 
   Widget _topBar(ColorScheme scheme) {
     final n = widget.level.qs.length;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 6, 14, 6),
+    final look = StudioLook.of(context);
+    return Container(
+      margin: const EdgeInsets.fromLTRB(10, 6, 10, 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.28),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: look.accent.withValues(alpha: 0.45), width: 1.2),
+      ),
       child: Row(children: [
         for (var i = 0; i < 3; i++)
           Padding(
-            padding: const EdgeInsets.only(right: 2),
-            child: Icon(i < lives ? Icons.favorite : Icons.favorite_border, size: 20, color: const Color(0xFFC8553D)),
+            padding: const EdgeInsetsDirectional.only(end: 2),
+            child: Icon(i < lives ? Icons.favorite : Icons.favorite_border, size: 20, color: StudioLook.bad),
           ),
         const SizedBox(width: 10),
-        Text('${bt(lang, 'question')} ${idx + 1}/$n', style: const TextStyle(fontWeight: FontWeight.w600)),
+        Flexible(
+          child: Text('${bt(lang, 'question')} ${idx + 1}/$n',
+              maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800, color: Colors.white)),
+        ),
         const Spacer(),
         if (streak >= 2)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(color: const Color(0xFFD9A441).withValues(alpha: 0.25), borderRadius: BorderRadius.circular(10)),
-            child: Text('${bt(lang, 'streak')} ×$streak', style: const TextStyle(fontWeight: FontWeight.w700)),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            decoration: BoxDecoration(
+              color: StudioLook.gold.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: StudioLook.gold.withValues(alpha: 0.7)),
+            ),
+            child: Text('${bt(lang, 'streak')} ×$streak', style: const TextStyle(fontWeight: FontWeight.w800, color: StudioLook.gold)),
           ),
-        const SizedBox(width: 10),
-        Text('$score', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+        const SizedBox(width: 8),
+        StudioStatChip(icon: Icons.star_rounded, color: StudioLook.gold, compact: true, text: '$score'),
       ]),
     );
   }
@@ -348,7 +363,7 @@ class _QuizViewState extends State<QuizView> {
     final marks = <MapMark>[];
     if (o != null) {
       final ol = o.lat, olon = o.lon;
-      if (ol != null && olon != null) marks.add(MapMark(ol, olon, o.right ? const Color(0xFF4F9A6E) : const Color(0xFFC8553D)));
+      if (ol != null && olon != null) marks.add(MapMark(ol, olon, o.right ? StudioLook.good : StudioLook.bad));
       if (world) {
         final c = kCountries[qq.a[0]];
         final ring = tapToleranceKm(qq.a[0], d) / 111 * WorldProjection.k;
@@ -387,7 +402,7 @@ class _QuizViewState extends State<QuizView> {
                 radius: 14,
                 backgroundColor: picks.contains(i) ? scheme.primary : scheme.surfaceContainerHighest,
                 child: Text(picks.contains(i) ? '${picks.indexOf(i) + 1}' : '',
-                    style: TextStyle(color: scheme.onPrimary, fontWeight: FontWeight.w700)),
+                    style: TextStyle(color: picks.contains(i) ? scheme.onPrimary : Colors.white, fontWeight: FontWeight.w700)),
               ),
               const SizedBox(width: 10),
               Expanded(child: Text(text.options[i])),
@@ -549,12 +564,12 @@ class _QuizViewState extends State<QuizView> {
         margin: const EdgeInsets.fromLTRB(10, 4, 10, 10),
         padding: const EdgeInsets.fromLTRB(14, 10, 10, 10),
         decoration: BoxDecoration(
-          color: (good ? const Color(0xFF4F9A6E) : const Color(0xFFC8553D)).withValues(alpha: 0.14),
+          color: (good ? StudioLook.good : StudioLook.bad).withValues(alpha: 0.14),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: good ? const Color(0xFF4F9A6E) : const Color(0xFFC8553D)),
+          border: Border.all(color: good ? StudioLook.good : StudioLook.bad),
         ),
         child: Row(children: [
-          Icon(good ? Icons.check_circle : Icons.cancel, color: good ? const Color(0xFF4F9A6E) : const Color(0xFFC8553D)),
+          Icon(good ? Icons.check_circle : Icons.cancel, color: good ? StudioLook.good : StudioLook.bad),
           const SizedBox(width: 10),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
@@ -584,20 +599,22 @@ class _OptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final look = StudioLook.of(context);
+    // Onaylı tasarımın cevap kartı: yarı saydam, vurgu kenarlı; doğru yeşil,
+    // yanlış kırmızı.
     final bg = switch (state) {
-      1 => const Color(0xFF4F9A6E).withValues(alpha: 0.22),
-      2 => const Color(0xFFC8553D).withValues(alpha: 0.22),
-      _ => scheme.surface,
+      1 => StudioLook.good.withValues(alpha: 0.24),
+      2 => StudioLook.bad.withValues(alpha: 0.24),
+      _ => selected ? look.accent.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.07),
     };
     final side = switch (state) {
-      1 => const Color(0xFF4F9A6E),
-      2 => const Color(0xFFC8553D),
-      _ => selected ? scheme.primary : scheme.outlineVariant,
+      1 => StudioLook.good,
+      2 => StudioLook.bad,
+      _ => selected ? look.accent : look.accent.withValues(alpha: 0.45),
     };
     return Material(
       color: bg,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: side, width: state == 0 && !selected ? 1 : 2.4)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18), side: BorderSide(color: side, width: state == 0 && !selected ? 1.2 : 2.4)),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
@@ -663,10 +680,10 @@ class QuestionVisual extends StatelessWidget {
     switch (visualOf(q)) {
       case QVisual.worldPin:
         final c = kCountries[q.a[0]];
-        return GeoMap(turkey: false, marks: [MapMark(c.lat, c.lon, const Color(0xFFC8553D))]);
+        return GeoMap(turkey: false, marks: [MapMark(c.lat, c.lon, StudioLook.bad)]);
       case QVisual.turkeyPin:
         final p = kProvinces[q.a[0]];
-        return GeoMap(turkey: true, marks: [MapMark(p.lat, p.lon, const Color(0xFFC8553D))]);
+        return GeoMap(turkey: true, marks: [MapMark(p.lat, p.lon, StudioLook.bad)]);
       case QVisual.plate:
         return Center(child: FittedBox(child: PlateView(code: kProvinces[q.a[0]].plate)));
       case QVisual.element:
